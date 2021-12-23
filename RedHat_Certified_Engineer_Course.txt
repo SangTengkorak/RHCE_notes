@@ -1,0 +1,76 @@
+RedHat Certified Engineer Course
+
+1. Network Teaming/ Bonding for Aggregate Links Between Multiple Systems
+    Command Example
+    - Create network team entity with activebackup mode
+    nmcli con add type team con-name lateam0 ifname lateam0 config '{"runner": {"name": "activebackup"}}'
+
+    - Configure network team IP
+    nmcli con mod lateam0 ipv4.addresses '192.168.0.10/24'
+
+    - Configure network team to use manual IP
+    nmcli con mod lateam ipv4.method manual
+
+    - Add ports to network team entity
+    nmcli con add type team-slave con-name lateam0-port1 ifname enp0s8 master lateam0   # Add port 1
+    nmcli con add type team-slave con-name lateam0-port2 ifname enp0s9 master lateam0   # Add port 2
+
+    - Activate network team ports and connection
+    nmcli con up lateam0-port1  # Activate port 1
+    nmcli con up lateam0-port2  # Activate port 2
+    nmcli con up lateam0        # Activate network team instance
+
+    - Check network team condition status
+    teamdctl lateam0 state
+
+    - Modify active port
+    nmcli con down lateam0-port1    # Disable network team port 1
+
+2. Configure and Troubleshoot IPv6 addresses
+    Command Example
+    - Display available connection
+    nmcli con show
+
+    - Create a new connection named eth1
+    nmcli con add con-name eth1 type ethernet ifname eth1
+
+    - Create IP adress for newly added connection
+    nmcli con mod eth1 ipv4.address 192.168.10.100/24
+
+    - Set connection to use manual IP addresses
+    nmcli con mod eth1 ipv4.method manual
+
+    - Configure IPV6 on eth1
+    nmcli con mod eth1 ipv6.addresses fddb:fe2a:ab1e:c0a8:64/64
+
+    - Set IP address to manual
+    nmcli con mod eth1 ipv6.method manual
+
+    - Test IP connection
+    ping -I eth1 192.168.10.100     # for IPv4
+    ping6 -I eth1 fddb:fe2a:ab1e:c0a8:64/64     #  for IPv6
+
+3. Route IP traffic and Create Static Routes
+    Command Example
+    - Display available routes and its gateway
+    netstat -rn
+
+    - Newer command to display Routes
+    ip route list
+
+    - Configure IP route for specific network
+    sudo ip route add 216.239.38.0/24 via 192.168.4.1 dev enp0s8
+
+    - Delete specific IP route
+    sudo ip route del  216.239.38.0/24 via 192.168.4.1 dev enp0s8
+
+    - Trace network route
+    traceroute 216.239.38.120
+
+    - Create persistent IP routes
+    vim /etc/sysconfig/static-routes
+    -> with content
+    any net 216.239.38.0 netmask 255.255.255.0 gw 10.0.2.2 dev enps03
+
+    - Restart the network service for configuration take effect
+    systemctl restart network
